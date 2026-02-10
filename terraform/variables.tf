@@ -15,6 +15,12 @@ variable "repository_url" {
   type        = string
 }
 
+variable "github_token" {
+  description = "GitHub personal access token for repository access"
+  type        = string
+  sensitive   = true
+}
+
 variable "branch_name" {
   description = "Branch name to deploy"
   type        = string

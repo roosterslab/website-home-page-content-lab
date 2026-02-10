@@ -15,8 +15,12 @@ provider "aws" {
 
 # Amplify App
 resource "aws_amplify_app" "website_home_page" {
-  name       = var.app_name
-  repository = var.repository_url
+  name         = var.app_name
+  repository   = var.repository_url
+  access_token = var.github_token
+
+  # IAM role (if enabled)
+  iam_service_role_arn = var.create_amplify_role ? aws_iam_role.amplify_role[0].arn : null
 
   # Build settings
   build_spec = <<-EOT
@@ -39,13 +43,7 @@ resource "aws_amplify_app" "website_home_page" {
   EOT
 
   # Environment variables
-  dynamic "environment_variables" {
-    for_each = var.environment_variables
-    content {
-      name  = environment_variables.key
-      value = environment_variables.value
-    }
-  }
+  environment_variables = var.environment_variables
 
   # Enable auto branch creation for pull requests
   enable_auto_branch_creation = var.enable_auto_branch_creation
@@ -105,8 +103,3 @@ resource "aws_iam_role_policy_attachment" "amplify_backend_deployment" {
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess-Amplify"
 }
 
-# Connect the IAM role to the Amplify app
-resource "aws_amplify_app" "website_home_page_with_role" {
-  count      = var.create_amplify_role ? 1 : 0
-  iam_service_role_arn = aws_iam_role.amplify_role[0].arn
-}
